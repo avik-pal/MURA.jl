@@ -3,6 +3,18 @@ using Base.Iterators: partition
 
 data_cat = ["train", "valid"]
 
+"""
+  get_count_df(path_1, path_2, category)
+
+Add a count of the number of images are patient column
+and globally define a DataFrame.
+
+Arguments:
+1. `path_1`: Path to `labeled_studies` csv.
+2. `path_2`: Path to the `image_paths` csv.
+3. `category`: `train` or `valid`
+"""
+
 function get_count_df(path_1, path_2, category)
   df_1 = CSV.read(path_1, header = ["path", "label"])
   df_2 = CSV.read(path_2, header = ["path"])
@@ -20,6 +32,17 @@ function get_count_df(path_1, path_2, category)
     global df_valid = df_1
   end
 end
+
+"""
+  get_indices(study_type, category)
+
+Get the starting and ending indices in the dataframe created
+by calling `get_count_df` corresponding to the `study_type`
+
+Arguments:
+1. `study_type`: One of the 7 Study Types.
+2. `category`: `train` or `valid`
+"""
 
 function get_indices(study_type, category)
   start_ind = 0
@@ -47,6 +70,17 @@ function get_indices(study_type, category)
   (start_ind, end_ind)
 end
 
+"""
+  get_study_data(study_type)
+
+Returns a dictionary with 2 DataFrames containing the image
+paths for the `train` and `valid` set corresponding to the
+`study_type`.
+
+Arguments:
+1. `study_type`: One of the 7 Study Types.
+"""
+
 function get_study_data(study_type)
   a1, b1 = get_indices(study_type, "train")
   a2, b2 = get_indices(study_type, "valid")
@@ -61,6 +95,22 @@ normalize(img) = (img .- im_mean) ./ im_std
 denormalize(img) = img .* im_std .+ im_std
 
 im2arr(img) = permutedims(float.(channelview(imresize(img, (224, 224)))), [3, 2, 1])
+
+"""
+  get_batched_images(study_type, batch_size; path_t1 = "",
+                     path_t2 = "", path_v1 = "", path_v2 = "")
+
+Load the images of the train and validation set and get it into proper
+shape for running the classifier.
+
+Arguments:
+1. `study_type`: One of the 7 study types.
+2. `batch_size`: Batch Size for training and validation.
+3. `path_t1`: Optional path to the `train_labeled_studies.csv`.
+4. `path_t2`: Optional path to the `train_image_paths.csv`.
+5. `path_v1`: Optional path to the `valid_labeled_studies.csv`.
+6. `path_v2`: Optional path to the `valid_image_paths.csv`.
+"""
 
 function get_batched_images(study_type, batch_size; path_t1 = "",
                             path_t2 = "", path_v1 = "", path_v2 = "")
