@@ -21,9 +21,12 @@ function get_count_df(path_1, path_2, category)
   df_1[:count] = 0
   i = 1
   for (j, paths) in enumerate(df_1[:path])
-    while(paths == df_2[:path][i][1:end-10])
+    while(paths == df_2[:path][i][1:(findlast(isequal('/'), df_2[:path][i]))])
       df_1[:count][j] += 1
       i += 1
+      if i == size(df_2)[1]
+        break
+      end
     end
   end
   if(category == "train")
@@ -94,7 +97,8 @@ normalize(img) = (img .- im_mean) ./ im_std
 
 denormalize(img) = img .* im_std .+ im_std
 
-im2arr(img) = permutedims(float.(channelview(imresize(img, (224, 224)))), [3, 2, 1])
+# Convert all the images to Grayscale since some are already grayscale and this might reduce train time
+im2arr(img) = permutedims(reshape(float.(channelview(Gray.(imresize(img, (224, 224))))), 224, 224, 1), (2, 1, 3))
 
 """
   get_batched_images(study_type, batch_size; path_t1 = "",
@@ -114,13 +118,13 @@ Arguments:
 
 function get_batched_images(study_type, batch_size; path_t1 = "",
                             path_t2 = "", path_v1 = "", path_v2 = "")
-  try
+  try # Check if df_train is loaded
     df_train[1]
   catch
     warn("df_train was not loaded")
     get_count_df(path_t1, path_t2, "train")
   end
-  try
+  try # Check if df_valid is loaded
     df_valid[1]
   catch
     warn("df_valid was not loaded")
@@ -129,16 +133,22 @@ function get_batched_images(study_type, batch_size; path_t1 = "",
   dict = get_study_data(study_type)
   images = Dict("train_imgs" => [], "train_labs" => [],
                 "valid_imgs" => [], "valid_labs" => [])
+  c = 0
   for cate in data_cat
     for (i, path) in enumerate(dict[cate][:path])
       for j in 1:dict[cate][:count][i]
-        push!(images[cate * "_imgs"], normalize(im2arr(load(dict[cate][:path] * "_image$(j).png"))))
+        push!(images[cate * "_imgs"], normalize(im2arr(load(dict[cate][:path][i] * "_image$(j).png"))))
         push!(images[cate * "_labs"], dict[cate][:count][i])
+        c += 1
+        if(c%1000 == 0)
+          gc() # Without manual garbage collection cache resources might be exhausted
+        end
       end
     end
   end
+  gc() # Clear cache one images have been loaded
   Dict("train" => [(cat(4, images["train_imgs"][i]...), images["train_labs"][i])
-        for i in partition(1:length(images["train"]), batch_size)],
+        for i in partition(1:length(images["train_imgs"]), batch_size)],
        "valid" => [(cat(4, images["valid_imgs"][i]...), images["valid_labs"][i])
-        for i in partition(1:length(images["valid"]), batch_size)])
+        for i in partition(1:length(images["valid_imgs"]), batch_size)])
 end
