@@ -146,7 +146,7 @@ function get_batched_images(study_type, batch_size; path_t1 = "",
       end
     end
   end
-  gc() # Clear cache one images have been loaded
+  gc() # Clear cache once images have been loaded
   Dict("train" => [(cat(4, images["train_imgs"][i]...), images["train_labs"][i])
         for i in partition(1:length(images["train_imgs"]), batch_size)],
        "valid" => [(cat(4, images["valid_imgs"][i]...), images["valid_labs"][i])
