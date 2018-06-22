@@ -1,5 +1,18 @@
 using Plots
 
+"""
+  plot_training(acc, cost)
+
+Plot the `Cost vs Epochs` and `Accuracy vs Epochs` graphs
+for both the Training and Validation Set.
+
+Arguments:
+1. `acc`: A dictionary with keys `train` and `valid` and stores an
+          array corresponding to the accuracy during training.
+2. `cost`: A dictionary with keys `train` and `valid` and stores an
+           array corresponding to the cost during training.
+"""
+
 function plot_training(acc, cost)
   plotly()
   acc_train = acc["train"]
