@@ -100,6 +100,15 @@ denormalize(img) = img .* im_std .+ im_std
 # Convert all the images to Grayscale since some are already grayscale and this might reduce train time
 im2arr(img) = permutedims(reshape(float.(channelview(Gray.(imresize(img, (224, 224))))), 224, 224, 1), (2, 1, 3))
 
+# function im2arr(img)
+#   img = channelview(imresize(img, (224, 224)))
+#   if ndims(img) != 3 # Since some of the images are grayscale we leave them out
+#     false
+#   else
+#     permutedims(reshape(float.(img), 224, 224, 3), (2, 1, 3))
+#   end
+# end
+
 """
   get_batched_images(study_type, batch_size; path_t1 = "",
                      path_t2 = "", path_v1 = "", path_v2 = "")
@@ -137,8 +146,12 @@ function get_batched_images(study_type, batch_size; path_t1 = "",
   for cate in data_cat
     for (i, path) in enumerate(dict[cate][:path])
       for j in 1:dict[cate][:count][i]
-        push!(images[cate * "_imgs"], normalize(im2arr(load(dict[cate][:path][i] * "_image$(j).png"))))
-        push!(images[cate * "_labs"], dict[cate][:count][i])
+        img = im2arr(load(dict[cate][:path][i] * "image$(j).png"))
+        # if img == false
+        #   continue
+        # end
+        push!(images[cate * "_imgs"], img)
+        push!(images[cate * "_labs"], dict[cate][:label][i])
         c += 1
         if(c%1000 == 0)
           gc() # Without manual garbage collection cache resources might be exhausted
@@ -147,6 +160,10 @@ function get_batched_images(study_type, batch_size; path_t1 = "",
     end
   end
   gc() # Clear cache once images have been loaded
+  # Randomly shuffle the train images
+  perm_train_inds = randperm(length(images["train_imgs"]))
+  images["train_imgs"] = images["train_imgs"][perm_train_inds]
+  images["train_labs"] = images["train_labs"][perm_train_inds]
   Dict("train" => [(cat(4, images["train_imgs"][i]...), images["train_labs"][i])
         for i in partition(1:length(images["train_imgs"]), batch_size)],
        "valid" => [(cat(4, images["valid_imgs"][i]...), images["valid_labs"][i])

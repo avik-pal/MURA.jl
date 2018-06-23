@@ -31,3 +31,35 @@ function plot_training(acc, cost)
 
   plot(p1, p2, p3, p4, layout = (2, 2))
 end
+
+"""
+  get_count(dataset)
+
+Counts the number of abnormal images and the number of normal
+images in the dataset.
+
+Arguments:
+1. `dataset`: For the input format see the output of `get_batched_images`.
+              Any other input will not give proper results. Ideally pass
+              the output from the `get_batched_images` function.
+"""
+
+function get_count(dataset)
+  local categories = ["train", "valid"]
+  total_abnormal_imgs = Dict("train" => 0, "valid" => 0)
+  total_normal_imgs = Dict("train" => 0, "valid" => 0)
+
+  for cat in categories
+    for tup in dataset[cat]
+      for i in tup[2]
+        if i == 1
+          total_abnormal_imgs[cat] += 1
+        else
+          total_normal_imgs[cat] += 1
+        end
+      end
+    end
+  end
+
+  (total_abnormal_imgs, total_normal_imgs)
+end

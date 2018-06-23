@@ -27,10 +27,10 @@ function _make_dense_layers(block, in_planes, growth_rate, nblock)
   Chain(layers...)
 end
 
-function _DenseNet(nblocks; block = Bottleneck, growth_rate = 12, reduction = 0.5, num_classes = 1)
+function _DenseNet(nblocks; in_chs = 1, block = Bottleneck, growth_rate = 12, reduction = 0.5, num_classes = 1)
   num_planes = 2growth_rate
   layers = []
-  push!(layers, Conv((7, 7), 3=>num_planes, stride = (2, 2), pad = (3, 3)))
+  push!(layers, Conv((7, 7), in_chs=>num_planes, stride = (2, 2), pad = (3, 3)))
   push!(layers, BatchNorm(num_planes, relu))
   push!(layers, x -> maxpool(x, (3, 3), stride = (2, 2), pad = (1, 1)))
 
@@ -48,7 +48,7 @@ function _DenseNet(nblocks; block = Bottleneck, growth_rate = 12, reduction = 0.
 
   Chain(layers..., x -> meanpool(x, (7, 7)),
         x -> reshape(x, :, size(x, 4)),
-        Dense(num_planes, num_classes), sigmoid)
+        Dense(num_planes, num_classes), x -> σ.(x))
 end
 
 """
