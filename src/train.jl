@@ -1,6 +1,7 @@
 using BSON: @save, @load
 
 function train_model()
+  info("Starting to train model")
   start_time = time()
   i = 1
   local costs = []
@@ -35,6 +36,7 @@ function train_model()
 end
 
 function validate_model()
+  info("Validating Model")
   local costs = []
   local accs = []
   for d in data["valid"]
