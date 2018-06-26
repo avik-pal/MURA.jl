@@ -52,7 +52,7 @@ function _DenseNet(nblocks; in_chs = 1, block = Bottleneck, growth_rate = 12, re
 end
 
 """
-  get_model(depth, pretrained::Bool = false)
+  get_densenet_model(depth, pretrained::Bool = false)
 
 Creates the Densenet model as per the arguments passed.
 
@@ -65,7 +65,7 @@ Arguments:
                  `121` results in an **ERROR**.
 """
 
-function get_model(depth, pretrained::Bool = false)
+function get_densenet_model(depth, pretrained::Bool = false)
   if(pretrained && depth != 121)
     error("Pretrained weights are only available for Densenet 121")
   end
