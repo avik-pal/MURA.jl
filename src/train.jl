@@ -6,7 +6,7 @@ function train_model()
   i = 1
   local costs = []
   local accs = []
-  for d in data["train"]
+  for d in data_dict["train"]
     forward = model(d[1] |> gpu)
     res = d[2] |> gpu
     l = loss(res, forward, "train")
@@ -30,8 +30,8 @@ function train_model()
       start_time = time()
     end
   end
-  push!(cost_metric["train"], sum(costs)/length(data))
-  push!(accuracy_metric["train"], sum(accs)/length(data))
+  push!(cost_metric["train"], sum(costs)/length(dict_dict["train"]))
+  push!(accuracy_metric["train"], sum(accs)/length(data_dict["train"]))
   info("Training Loss is $(cost_metric["train"][end]) Training Accuracy is $(accuracy_metric["train"][end])")
 end
 
@@ -39,7 +39,7 @@ function validate_model()
   info("Validating Model")
   local costs = []
   local accs = []
-  for d in data["valid"]
+  for d in data_dict["valid"]
     forward = model(d[1] |> gpu)
     res = d[2] |> gpu
     l = loss(res, forward, "train")
@@ -47,7 +47,7 @@ function validate_model()
     a = accuracy(res, forward)
     push!(accs, a)
   end
-  push!(cost_metric["valid"], sum(costs)/length(data))
-  push!(accuracy_metric["valid"], sum(accs)/length(data))
+  push!(cost_metric["valid"], sum(costs)/length(data_dict["valid"]))
+  push!(accuracy_metric["valid"], sum(accs)/length(data_dict["valid"]))
   info("Validation Loss is $(cost_metric["valid"][end]) Validation Accuracy is $(accuracy_metric["valid"][end])")
 end

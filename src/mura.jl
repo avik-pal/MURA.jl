@@ -17,9 +17,9 @@ verbose = 1
 epochs = 1
 #------------------------------------------
 
-data = get_batched_images(which_cat, batch_size, path_t1 = "../MURA-v1.1/train_labeled_studies.csv", path_t2 = "../MURA-v1.1/train_image_paths.csv", path_v1 = "../MURA-v1.1/valid_labeled_studies.csv", path_v2 = "../MURA-v1.1/valid_image_paths.csv")
+data_dict = get_batched_images(which_cat, batch_size, path_t1 = "../MURA-v1.1/train_labeled_studies.csv", path_t2 = "../MURA-v1.1/train_image_paths.csv", path_v1 = "../MURA-v1.1/valid_labeled_studies.csv", path_v2 = "../MURA-v1.1/valid_image_paths.csv")
 
-counts = get_count(data)
+counts = get_count(data_dict)
 
 weight_1 = Dict(i => counts[1][i]/(counts[1][i] + counts[2][i]) for i in ["train", "valid"])
 
