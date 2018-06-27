@@ -21,6 +21,7 @@ up at the end of 1 epoch.
 """
 
 function train_model()
+  global model
   info("Starting to train model")
   start_time = time()
   i = 1
@@ -30,9 +31,9 @@ function train_model()
     forward = model(d[1] |> gpu)
     res = d[2] |> gpu
     l = loss(res, forward, "train")
-    push!(costs, l)
+    push!(costs, Tracker.data(l))
     a = accuracy(res, forward)
-    push!(accs, a)
+    push!(accs, Tracker.data(a))
     if verbose == 1
       @show l
       @show a
@@ -44,7 +45,7 @@ function train_model()
       model = model |> cpu
       i == overwrite_save_interval ? i = 1 : i += 1
       save_path = model_save_path * "_i.bson"
-      @save model save_path
+      @save save_path model
       info("Model Saved at $(save_path)")
       model = model |> gpu
       start_time = time()
@@ -70,6 +71,7 @@ accuracy.
 """
 
 function validate_model()
+  global model
   info("Validating Model")
   Flux.testmode!(model)
   local costs = []
@@ -78,9 +80,9 @@ function validate_model()
     forward = model(d[1] |> gpu)
     res = d[2] |> gpu
     l = loss(res, forward, "train")
-    push!(costs, l)
+    push!(costs, Tracker.data(l))
     a = accuracy(res, forward)
-    push!(accs, a)
+    push!(accs, Tracker.data(a))
   end
   push!(cost_metric["valid"], sum(costs)/length(data_dict["valid"]))
   push!(accuracy_metric["valid"], sum(accs)/length(data_dict["valid"]))
