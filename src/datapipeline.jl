@@ -164,8 +164,8 @@ function get_batched_images(study_type, batch_size; path_t1 = "",
   perm_train_inds = randperm(length(images["train_imgs"]))
   images["train_imgs"] = images["train_imgs"][perm_train_inds]
   images["train_labs"] = images["train_labs"][perm_train_inds]
-  Dict("train" => [(cat(4, images["train_imgs"][i]...), images["train_labs"][i])
+  Dict("train" => [(cat(4, images["train_imgs"][i]...), reshape(Float32.(images["train_labs"][i]), 1, :))
         for i in partition(1:length(images["train_imgs"]), batch_size)],
-       "valid" => [(cat(4, images["valid_imgs"][i]...), images["valid_labs"][i])
+       "valid" => [(cat(4, images["valid_imgs"][i]...), reshape(Float32.(images["valid_labs"][i]), 1, :))
         for i in partition(1:length(images["valid_imgs"]), batch_size)])
 end
