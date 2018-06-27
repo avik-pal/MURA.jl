@@ -154,6 +154,7 @@ function get_batched_images(study_type, batch_size; path_t1 = "",
         push!(images[cate * "_labs"], dict[cate][:label][i])
         c += 1
         if(c%1000 == 0)
+          info("$c images loaded")
           gc() # Without manual garbage collection cache resources might be exhausted
         end
       end
