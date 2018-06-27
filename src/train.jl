@@ -1,5 +1,25 @@
 using BSON: @save, @load
 
+"""
+  train_model()
+
+This function takes no arguments. All the variables used in here
+are to be `globally initialized`.
+
+This function trains the `model` using the `data_dict["train"]`
+dataset. I call to the function essentially signifies `1 epoch`.
+
+Apart from these variable it expects `save_interval` and
+`overwrite_save_interval` to be set prior to the call. THese essentially
+help to automate the checkpointing the model.
+
+At the end of the epoch the total loss and accuracy is printed but
+if more detailed printing is needed then simply set `verbose` o `1`.
+
+Also the `cost_metric` and `accuracy_metric` dictionaries are filled
+up at the end of 1 epoch.
+"""
+
 function train_model()
   info("Starting to train model")
   start_time = time()
@@ -35,8 +55,23 @@ function train_model()
   info("Training Loss is $(cost_metric["train"][end]) Training Accuracy is $(accuracy_metric["train"][end])")
 end
 
+"""
+  validate_model()
+
+This function takes no arguments. All the variables used in here
+are to be `globally initialized`.
+
+This function tests the `model` using the `data_dict["valid"]`
+dataset.
+
+Also the `cost_metric` and `accuracy_metric` dictionaries are filled
+up at the end. Additionally it displays the validation loss and
+accuracy.
+"""
+
 function validate_model()
   info("Validating Model")
+  Flux.testmode!(model)
   local costs = []
   local accs = []
   for d in data_dict["valid"]
@@ -49,5 +84,6 @@ function validate_model()
   end
   push!(cost_metric["valid"], sum(costs)/length(data_dict["valid"]))
   push!(accuracy_metric["valid"], sum(accs)/length(data_dict["valid"]))
+  Flux.testmode!(model, false)
   info("Validation Loss is $(cost_metric["valid"][end]) Validation Accuracy is $(accuracy_metric["valid"][end])")
 end
