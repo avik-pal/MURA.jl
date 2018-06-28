@@ -90,8 +90,8 @@ function get_study_data(study_type)
   Dict("train" => df_train[a1:b1, :], "valid" => df_valid[a2:b2, :])
 end
 
-im_mean = reshape([0.485, 0.456, 0.406], 1, 1, 3)
-im_std = reshape([0.229, 0.224, 0.225], 1, 1, 3)
+# im_mean = reshape([0.485, 0.456, 0.406], 1, 1, 3)
+# im_std = reshape([0.229, 0.224, 0.225], 1, 1, 3)
 
 normalize(img) = (img .- im_mean) ./ im_std
 
@@ -150,7 +150,7 @@ function get_batched_images(study_type, batch_size; path_t1 = "",
         # if img == false
         #   continue
         # end
-        push!(images[cate * "_imgs"], img)
+        push!(images[cate * "_imgs"], 255 * img)
         push!(images[cate * "_labs"], dict[cate][:label][i])
         c += 1
         if(c%1000 == 0)
@@ -161,6 +161,14 @@ function get_batched_images(study_type, batch_size; path_t1 = "",
     end
   end
   gc() # Clear cache once images have been loaded
+  # Test this part of pipeline
+  for cate in data_cat
+    μ = mean(cat(i, 4) for i in images[cate * "_imgs"])
+    σ = std(cat(i, 4) for i in images[cate * "_imgs"])
+    for p in 1:length(images[cate*"imgs"])
+      images[cate*"imgs"][p] .= (images[cate*"imgs"][p] .- μ)./σ
+    end
+  end
   # Randomly shuffle the train images
   perm_train_inds = randperm(length(images["train_imgs"]))
   images["train_imgs"] = images["train_imgs"][perm_train_inds]

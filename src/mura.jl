@@ -31,6 +31,8 @@ loss(x_true, x_pred, cat) = mean(- weight_2[cat] * x_true .* CUDAnative.log.(x_p
 # Currently the accuracy metric is poorly defined. Ideally threshold should mean confidence in this case
 accuracy(x_true, x_pred, threshold = threshold) = mean((x_pred .>= threshold) .== x_true)
 
+# TODO: Define the precision, recall and f1 score functions
+
 cost_metric = Dict("train" => [], "valid" => [])
 accuracy_metric = Dict("train" => [], "valid" => [])
 
