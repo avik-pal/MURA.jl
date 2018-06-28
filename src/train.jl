@@ -38,6 +38,9 @@ function train_model()
       @show l
       @show a
     end
+    if isnan(l) || isinf(l)
+      error("Model Weights have diverged. Change the Learning Rate")
+    end
     Flux.back!(l)
     opt()
     end_time = time()
@@ -51,7 +54,7 @@ function train_model()
       start_time = time()
     end
   end
-  push!(cost_metric["train"], sum(costs)/length(dict_dict["train"]))
+  push!(cost_metric["train"], sum(costs)/length(data_dict["train"]))
   push!(accuracy_metric["train"], sum(accs)/length(data_dict["train"]))
   info("Training Loss is $(cost_metric["train"][end]) Training Accuracy is $(accuracy_metric["train"][end])")
 end
