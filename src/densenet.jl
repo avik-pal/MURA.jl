@@ -66,7 +66,7 @@ Arguments:
 """
 
 function get_densenet_model(depth, pretrained::Bool = false)
-  if(pretrained && depth != 121)
+  if pretrained && depth != 121
     error("Pretrained weights are only available for Densenet 121")
   end
   if depth == 121

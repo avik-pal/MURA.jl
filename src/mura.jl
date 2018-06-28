@@ -5,7 +5,7 @@ include("train.jl")
 using CUDAnative
 
 #--------------Hyperparameters-------------
-model = get_densenet_model(169) |> gpu
+model = get_densenet_model(169)
 threshold = 0.5
 lr = 0.01
 batch_size = 16
