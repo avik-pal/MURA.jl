@@ -71,7 +71,9 @@ function get_densenet_model(depth, pretrained::Bool = false)
   end
   if depth == 121
     if pretrained
-      DenseNet() |> gpu
+      m = DenseNet() |> gpu
+      Flux.testmode!(m, false)
+      m
     else
       _DenseNet([6, 12, 24, 16]) |> gpu
     end
