@@ -54,13 +54,13 @@ function Bottleneck(filters::Int, downsample::Bool = false, res_top::Bool = fals
 end
 
 # Function to build Standard Resnet models as described in the paper "Deep Residual Learning for Image Recognition"
-function _ResNet(Block, layers, initial_filters::Int = 64, nclasses::Int = 160)
+function _ResNet(Block, layers; in_chs = 1, initial_filters::Int = 64, nclasses::Int = 160)
 
   local top = []
   local residual = []
   local bottom = []
 
-  push!(top, Conv((7,7), 3=>initial_filters, pad = (3,3), stride = (2,2)))
+  push!(top, Conv((7,7), in_chs=>initial_filters, pad = (3,3), stride = (2,2)))
   push!(top, x -> maxpool(x, (3,3), pad = (1,1), stride = (2,2)))
 
   for i in 1:length(layers)

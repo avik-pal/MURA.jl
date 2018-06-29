@@ -40,9 +40,9 @@ opt = ADAM(params(model), lr)
 
 for i in 1:epochs
     info("Starting Epoch $i")
-    train_model()
+    Flux.Optimise.@interrupts train_model()
     @save model_save_path*"_end_epoch.bson" model
-    validate_model()
+    Flux.Optimise.@interrupts validate_model()
     info("Epoch $i Complete")
 end
 

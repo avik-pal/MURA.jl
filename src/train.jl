@@ -31,16 +31,19 @@ function train_model()
     forward = model(d[1] |> gpu)
     res = d[2] |> gpu
     l = loss(res, forward, "train")
-    push!(costs, Tracker.data(l))
     a = accuracy(res, forward)
-    push!(accs, Tracker.data(a))
     if verbose == 1
       @show l
       @show a
     end
     if isnan(l) || isinf(l)
-      error("Model Weights have diverged. Change the Learning Rate")
+      continue # Donot backprop through nan or inf loss instead neglect it
+      # This happens since the network is absolutely sertain about its prediction
+      # So the loss becomes NaN as it doesn't handle this case
+      # error("Model Weights have diverged. Change the Learning Rate")
     end
+    push!(costs, Tracker.data(l))
+    push!(accs, Tracker.data(a))
     Flux.back!(l)
     opt()
     end_time = time()
@@ -83,8 +86,11 @@ function validate_model()
     forward = model(d[1] |> gpu)
     res = d[2] |> gpu
     l = loss(res, forward, "train")
-    push!(costs, Tracker.data(l))
     a = accuracy(res, forward)
+    if isnan(l) || isinf(l)
+      continue # Donot backprop through nan or inf loss instead neglect it
+    end
+    push!(costs, Tracker.data(l))
     push!(accs, Tracker.data(a))
   end
   push!(cost_metric["valid"], sum(costs)/length(data_dict["valid"]))
