@@ -7,7 +7,7 @@ using CUDAnative
 #--------------Hyperparameters-------------
 model = get_densenet_model(169)
 threshold = 0.5
-lr = 0.01
+lr = 0.0001
 batch_size = 16
 which_cat = "XR_HAND"
 save_interval = 300
@@ -28,10 +28,13 @@ weight_2 = Dict(i => counts[2][i]/(counts[1][i] + counts[2][i]) for i in ["train
 
 loss(x_true, x_pred, cat) = mean(- weight_2[cat] * x_true .* CUDAnative.log.(x_pred) - weight_1[cat] * (1.0 - x_true) .* CUDAnative.log.(1.0 - x_pred))
 
-# Currently the accuracy metric is poorly defined. Ideally threshold should mean confidence in this case
 accuracy(x_true, x_pred, threshold = threshold) = mean((x_pred .>= threshold) .== x_true)
 
-# TODO: Define the precision, recall and f1 score functions
+precision(mat) = mat[2, 2] / (mat[2, 2] + mat[1, 2])
+
+recall(mat) = mat[2, 2] / (mat[2, 2] + mat[2, 1])
+
+f1_score(p, r) = 2 * p * r / (p + r)
 
 cost_metric = Dict("train" => [], "valid" => [])
 accuracy_metric = Dict("train" => [], "valid" => [])
