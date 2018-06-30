@@ -82,7 +82,7 @@ function confusion_matrix(dataset)
     pred = model(data[1] |> gpu)
     output = Int.(pred .>= threshold)
     for i in 1:length(output)
-      conf_mat[output[i] + 1, Int(data[2][j] + 1)] += 1
+      conf_mat[output[i] + 1, Int(data[2][i] + 1)] += 1
     end
   end
   Flux.testmode!(model, false)

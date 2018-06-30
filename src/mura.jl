@@ -30,7 +30,7 @@ loss(x_true, x_pred, cat) = mean(- weight_2[cat] * x_true .* CUDAnative.log.(x_p
 
 accuracy(x_true, x_pred, threshold = threshold) = mean((x_pred .>= threshold) .== x_true)
 
-precision(mat) = mat[2, 2] / (mat[2, 2] + mat[1, 2])
+preci(mat) = mat[2, 2] / (mat[2, 2] + mat[1, 2])
 
 recall(mat) = mat[2, 2] / (mat[2, 2] + mat[2, 1])
 
