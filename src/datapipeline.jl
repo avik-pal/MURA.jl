@@ -90,12 +90,12 @@ function get_study_data(study_type)
   Dict("train" => df_train[a1:b1, :], "valid" => df_valid[a2:b2, :])
 end
 
-# im_mean = reshape([0.485, 0.456, 0.406], 1, 1, 3)
-# im_std = reshape([0.229, 0.224, 0.225], 1, 1, 3)
+im_mean = reshape([0.485, 0.456, 0.406], 1, 1, 3)
+im_std = reshape([0.229, 0.224, 0.225], 1, 1, 3)
 
-normalize(img) = (img .- im_mean) ./ im_std
+_normalize(img) = (img .- im_mean) ./ im_std
 
-denormalize(img) = img .* im_std .+ im_std
+_denormalize(img) = img .* im_std .+ im_std
 
 # Convert all the images to Grayscale since some are already grayscale and this might reduce train time
 im2arr(img) = permutedims(reshape(float.(channelview(Gray.(imresize(img, (224, 224))))), 224, 224, 1), (2, 1, 3))
@@ -162,13 +162,13 @@ function get_batched_images(study_type, batch_size; path_t1 = "",
   end
   gc() # Clear cache once images have been loaded
   # Test this part of pipeline
-  for cate in data_cat
-    μ = mean(cat(i, 4) for i in images[cate * "_imgs"])
-    σ = std(cat(i, 4) for i in images[cate * "_imgs"])
-    for p in 1:length(images[cate*"imgs"])
-      images[cate*"imgs"][p] .= (images[cate*"imgs"][p] .- μ)./σ
-    end
-  end
+  # for cate in data_cat
+  #   μ = mean(cat(images[cate * "_imgs"]..., 4))
+  #   σ = std(cat(images[cate * "_imgs"]..., 4))
+  #   for p in 1:length(images[cate*"imgs"])
+  #     images[cate*"imgs"][p] .= (images[cate*"imgs"][p] .- μ)./σ
+  #   end
+  # end
   # Randomly shuffle the train images
   perm_train_inds = randperm(length(images["train_imgs"]))
   images["train_imgs"] = images["train_imgs"][perm_train_inds]

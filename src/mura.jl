@@ -2,6 +2,7 @@ include("datapipeline.jl")
 include("densenet.jl")
 include("utils.jl")
 include("train.jl")
+include("visualize.jl")
 using CUDAnative
 
 #--------------Hyperparameters-------------
@@ -34,7 +35,11 @@ preci(mat) = mat[2, 2] / (mat[2, 2] + mat[1, 2])
 
 recall(mat) = mat[2, 2] / (mat[2, 2] + mat[2, 1])
 
-f1_score(p, r) = 2 * p * r / (p + r)
+function f1_score(mat)
+  p = preci(mat)
+  r = recall(mat)
+  2 * p * r / (p + r)
+end
 
 cost_metric = Dict("train" => [], "valid" => [])
 accuracy_metric = Dict("train" => [], "valid" => [])
@@ -42,11 +47,11 @@ accuracy_metric = Dict("train" => [], "valid" => [])
 opt = ADAM(params(model), lr)
 
 for i in 1:epochs
-    info("Starting Epoch $i")
-    Flux.Optimise.@interrupts train_model()
-    @save model_save_path*"_end_epoch.bson" model
-    Flux.Optimise.@interrupts validate_model()
-    info("Epoch $i Complete")
+  info("Starting Epoch $i")
+  Flux.Optimise.@interrupts train_model()
+  @save model_save_path*"_end_epoch.bson" model
+  Flux.Optimise.@interrupts validate_model()
+  info("Epoch $i Complete")
 end
 
 plot = plot_training(accuracy_metric, cost_metric)
