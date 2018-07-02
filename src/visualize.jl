@@ -17,23 +17,31 @@ function get_topk(probs, k = 5)
 end
 
 function one_hot_encode(preds, idx)
-  one_hot = zeros(eltype(data(preds)), size(preds)[1], 1)
-  one_hot[idx ,1] = 1000.0
+  one_hot = zeros(eltype(preds.data), size(preds)[1], 1)
+  one_hot[idx ,1] = 255.0
   one_hot |> gpu
 end
 
 im2arr_rgb(img) = permutedims(float.(channelview(imresize(img, (224, 224)))), (3, 2, 1))
 
-function change_activation!(model::Chain, activation)
-  for (i, l) in enumerate(model.layers)
+# Just a hack to add the guided relu functions and replace the relu
+function change_activation(model::Chain, activation)
+  updated_model = []
+  for l in model.layers
     if typeof(l) <: Dense
-      model.layers[i] = Dense(l.W, l.b, activation)
+      push!(updated_model, Dense(l.W, l.b, identity))
+      push!(updated_model, activation)
     elseif typeof(l) <: Conv
-      model.layers[i] = Conv(activation, l.weight, l.bias, l.stride, l.pad, l.dilation)
+      push!(updated_model, Conv(identity, l.weight, l.bias, l.stride, l.pad, l.dilation))
+      push!(updated_model, activation)
     elseif typeof(l) <: BatchNorm
-      model.layers[i] = BatchNorm(activation, l.β, l.γ, l.μ, l.σ, l.ϵ, l.momentum, l.active)
+      push!(updated_model, BatchNorm(identity, l.β, l.γ, l.μ, l.σ, l.ϵ, l.momentum, l.active))
+      push!(updated_model, activation)
+    else
+      push!(updated_model, l)
     end
   end
+  Chain(updated_model...)
 end
 
 #--------------------BackPropagation----------------------
@@ -48,7 +56,7 @@ function (m::Backprop)(img, top = 1)
   end
   preds = m.model(img)
   probs = softmax(preds)
-  prob, inds = get_topk(data(probs), top)
+  prob, inds = get_topk(probs.data, top)
   grads = []
   for (i, idx) in enumerate(inds)
     Flux.back!(preds, one_hot_encode(preds, idx))
@@ -71,7 +79,7 @@ guided_relu1(x::TrackedArray) = Tracker.track(guided_relu1, x)
 Tracker.back(::typeof(guided_relu1), Δ, x) = Tracker.@back(x, Int.(x .> zero(x)) .* max.(zero(Δ), Δ))
 
 function GuidedBackprop(model::Chain)
-  change_activation!(model, guided_relu1)
+  model = change_activation(model, guided_relu1)
   Backprop(model[1:end-1] |> gpu)
 end
 
@@ -84,7 +92,7 @@ guided_relu2(x::TrackedArray) = Tracker.track(guided_relu2, x)
 Tracker.back(::typeof(guided_relu2), Δ, x) = Tracker.@back(x, max(zero(Δ), Δ))
 
 function Deconvolution(model::Chain)
-  change_activation!(model, guided_relu2)
+  model = change_activation(model, guided_relu2)
   Backprop(model[1:end-1] |> gpu)
 end
 
