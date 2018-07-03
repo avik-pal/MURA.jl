@@ -2,7 +2,6 @@ include("datapipeline.jl")
 include("densenet.jl")
 include("utils.jl")
 include("train.jl")
-include("visualize.jl")
 using CUDAnative
 
 #--------------Hyperparameters-------------

@@ -32,6 +32,7 @@ function train_model()
     res = d[2] |> gpu
     l = loss(res, forward, "train")
     a = accuracy(res, forward)
+    push!(accs, Tracker.data(a))
     if verbose == 1
       @show l
       @show a
@@ -43,7 +44,6 @@ function train_model()
       # error("Model Weights have diverged. Change the Learning Rate")
     end
     push!(costs, Tracker.data(l))
-    push!(accs, Tracker.data(a))
     Flux.back!(l)
     opt()
     end_time = time()
@@ -87,11 +87,11 @@ function validate_model()
     res = d[2] |> gpu
     l = loss(res, forward, "train")
     a = accuracy(res, forward)
+    push!(accs, Tracker.data(a))
     if isnan(l) || isinf(l)
       continue # Donot backprop through nan or inf loss instead neglect it
     end
     push!(costs, Tracker.data(l))
-    push!(accs, Tracker.data(a))
   end
   push!(cost_metric["valid"], sum(costs)/length(data_dict["valid"]))
   push!(accuracy_metric["valid"], sum(accs)/length(data_dict["valid"]))

@@ -14,7 +14,7 @@ Arguments:
 """
 
 function plot_training(acc, cost)
-  plotly()
+  gr()
   acc_train = acc["train"]
   acc_valid = acc["valid"]
   cost_train = acc["train"]
