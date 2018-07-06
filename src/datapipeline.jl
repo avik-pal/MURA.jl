@@ -100,15 +100,6 @@ _denormalize(img) = img .* im_std .+ im_std
 # Convert all the images to Grayscale since some are already grayscale and this might reduce train time
 im2arr(img) = permutedims(reshape(float.(channelview(Gray.(imresize(img, (224, 224))))), 224, 224, 1), (2, 1, 3))
 
-# function im2arr(img)
-#   img = channelview(imresize(img, (224, 224)))
-#   if ndims(img) != 3 # Since some of the images are grayscale we leave them out
-#     false
-#   else
-#     permutedims(reshape(float.(img), 224, 224, 3), (2, 1, 3))
-#   end
-# end
-
 """
   get_batched_images(study_type, batch_size; path_t1 = "",
                      path_t2 = "", path_v1 = "", path_v2 = "")
@@ -147,9 +138,6 @@ function get_batched_images(study_type, batch_size; path_t1 = "",
     for (i, path) in enumerate(dict[cate][:path])
       for j in 1:dict[cate][:count][i]
         img = im2arr(load(dict[cate][:path][i] * "image$(j).png"))
-        # if img == false
-        #   continue
-        # end
         push!(images[cate * "_imgs"], 255 * img)
         push!(images[cate * "_labs"], dict[cate][:label][i])
         c += 1
@@ -161,14 +149,6 @@ function get_batched_images(study_type, batch_size; path_t1 = "",
     end
   end
   gc() # Clear cache once images have been loaded
-  # Test this part of pipeline
-  # for cate in data_cat
-  #   μ = mean(cat(images[cate * "_imgs"]..., 4))
-  #   σ = std(cat(images[cate * "_imgs"]..., 4))
-  #   for p in 1:length(images[cate*"imgs"])
-  #     images[cate*"imgs"][p] .= (images[cate*"imgs"][p] .- μ)./σ
-  #   end
-  # end
   # Randomly shuffle the train images
   perm_train_inds = randperm(length(images["train_imgs"]))
   images["train_imgs"] = images["train_imgs"][perm_train_inds]
